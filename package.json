@@ -1,0 +1,20 @@
+{
+  "name": "cloudflareddns",
+  "version": "1.0.0",
+  "description": "A fully automated, secure, modern Cloudflare DDNS client that checks your public IP address every minute and updates the appropriate A record in Cloudflare.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "node-cron": "^4.0.7",
+    "winston": "^3.17.0"
+  }
+}
