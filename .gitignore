@@ -2,3 +2,5 @@
 .env
 node_modules
 logs
+old_app.js_
+domains.json

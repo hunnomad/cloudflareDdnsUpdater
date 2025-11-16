@@ -1,0 +1,24 @@
+[
+  {
+    "ENABLED": true,
+    "AUTH_EMAIL": "user@xy.com",
+    "AUTH_METHOD": "global",
+    "AUTH_KEY": "xxx",
+    "ZONE_IDENTIFIER": "yyy",
+    "RECORD_NAME": "domain.name",
+    "TTL": 3600,
+    "PROXY": true,
+    "SITENAME": "domain.name"
+  },
+  {
+    "ENABLED": true,
+    "AUTH_EMAIL": "user2@gmail.com",
+    "AUTH_METHOD": "token",
+    "AUTH_KEY": "xxx",
+    "ZONE_IDENTIFIER": "yyy",
+    "RECORD_NAME": "domain2.name",
+    "TTL": 3600,
+    "PROXY": true,
+    "SITENAME": "domain2.name"
+  }
+]
