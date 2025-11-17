@@ -1,139 +1,179 @@
+# 🌐 Cloudflare DDNS Updater --- Multi‑Domain Edition (Node.js)
 
-# 🌐 Cloudflare DDNS Updater (Node.js Edition)
+A modern, production‑ready Cloudflare DDNS updater with **multi‑domain
+support**, allowing each domain to have its own authentication method,
+API key, zone ID, record name, TTL, and proxy settings.
 
-A fully automated, secure, modern Cloudflare DDNS client that checks your public IP address every minute and updates the appropriate A record in Cloudflare.
-
----
+------------------------------------------------------------------------
 
 ## 🔧 Features
 
-- ✅ `.env` file support
-- ✅ Minute-based check with `node-cron`
-- ✅ Logging with `winston`: colored console + file (`./logs/ddns.log`)
-- ✅ Notifications via `ntfy`, `Telegram`, `Slack`, `Discord` (optional)
-- ✅ Built-in `heartbeat` API for monitoring (`GET /heartbeat`)
-- ✅ No unnecessary dependencies: secure and lightweight
+-   **Multi‑domain support** via `domains.json`
+-   Each domain can define:
+    -   `AUTH_EMAIL`
+    -   `AUTH_METHOD` (`global` or `token`)
+    -   `AUTH_KEY`
+    -   `ZONE_IDENTIFIER`
+    -   `RECORD_NAME`
+    -   `TTL`
+    -   `PROXY`
+    -   `SITENAME`
+-   Shared global configuration using `.env`
+-   Minute‑based scheduled updates using `node-cron`
+-   Winston logging: colored console + `./logs/ddns.log`
+-   Optional notifications:
+    -   ntfy
+    -   Telegram
+    -   Slack
+    -   Discord
+-   Built‑in `GET /heartbeat` endpoint
+-   Lightweight, minimal dependencies
 
----
+------------------------------------------------------------------------
 
-## 🚀 Installation
+## 📦 Installation
 
-1. Clone or download the project:
-   ```bash
-   git clone https://github.com/youruser/cloudflareDdns.git
-   cd cloudflareDdns
-   ```
+### 1. Clone the repository
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+``` bash
+git clone https://github.com/youruser/cloudflare-ddns-multi.git
+cd cloudflare-ddns-multi
+```
 
-3. Create a `.env` file with the following content:
+### 2. Install dependencies
 
-```env
-AUTH_EMAIL=your@email.com
-AUTH_METHOD=global
-AUTH_KEY=your_cloudflare_api_key
-ZONE_IDENTIFIER=zone_id_here
-RECORD_NAME=example.com
-TTL=3600
-PROXY=true
-SITENAME=example.com
+``` bash
+npm install
+```
 
-NTFY_URI=https://ntfy.sh/your-topic
-TELEGRAM_TOKEN=123456:ABCdef...
-TELEGRAM_CHAT_ID=123456789
+------------------------------------------------------------------------
+
+## ⚙️ Configuration
+
+### `.env` -- Global service-level settings
+
+``` env
+SITENAME=CloudflareDDNS
+
+NTFY_URI=
+TELEGRAM_TOKEN=
+TELEGRAM_CHAT_ID=
 SLACK_URI=
 SLACK_CHANNEL=
 DISCORD_URI=
 
-HEARTBEAT_PORT=8099
+HEARTBEAT_PORT=8999
 ```
 
-| Variable           | Description                                                                 |
-|--------------------|-----------------------------------------------------------------------------|
-| `AUTH_EMAIL`       | The email used to login to Cloudflare Dashboard                            |
-| `AUTH_METHOD`      | Set to `"global"` for Global API Key or `"token"` for Scoped API Token     |
-| `AUTH_KEY`         | Your API Token or Global API Key                                            |
-| `ZONE_IDENTIFIER`  | Found in the "Overview" tab of your domain in Cloudflare                   |
-| `RECORD_NAME`      | The DNS record you want to keep updated (e.g. `example.com`)               |
-| `TTL`              | Time to live for DNS record, in seconds (default: 3600)                    |
-| `PROXY`            | Use `"true"` or `"false"` to enable/disable Cloudflare proxy               |
-| `SITENAME`         | Just a display name for your site, used in notifications                   |
-| `SLACK_CHANNEL`    | Slack channel name (e.g. `#updates`)                                       |
-| `SLACK_URI`        | Slack Webhook URL                                                           |
-| `DISCORD_URI`      | Discord Webhook URL                                                         |
-| `NTFY_URI`         | ntfy.sh URL for push notification                                           |
-| `TELEGRAM_TOKEN`   | Telegram bot token for push messages                                        |
-| `TELEGRAM_CHAT_ID` | Chat ID to send Telegram notifications                                      |
-| `HEARTBEAT_PORT`   | Port for the heartbeat monitoring endpoint (default: `8099`)                |
+------------------------------------------------------------------------
 
-4. Start the updater:
+### `domains.json` -- Domain‑specific Cloudflare settings
 
-```bash
+Create a file named `domains.json`:
+
+``` json
+[
+  {
+    "ENABLED": true,
+    "AUTH_EMAIL": "your@mail.com",
+    "AUTH_METHOD": "global",
+    "AUTH_KEY": "YOUR_CF_GLOBAL_KEY",
+    "ZONE_IDENTIFIER": "zone_id_here",
+    "RECORD_NAME": "example.com",
+    "TTL": 3600,
+    "PROXY": true,
+    "SITENAME": "example.com"
+  },
+  {
+    "ENABLED": true,
+    "AUTH_EMAIL": "info@another.com",
+    "AUTH_METHOD": "token",
+    "AUTH_KEY": "YOUR_CF_API_TOKEN",
+    "ZONE_IDENTIFIER": "another_zone_id",
+    "RECORD_NAME": "anotherdomain.com",
+    "TTL": 300,
+    "PROXY": false,
+    "SITENAME": "anotherdomain.com"
+  }
+]
+```
+
+You may add **any number of domains**.\
+Each domain is processed independently.
+
+------------------------------------------------------------------------
+
+## 🚀 Running the Updater
+
+Start the updater using:
+
+``` bash
 node app.js
 ```
-or
 
-```bash
+or:
+
+``` bash
 npm start
 ```
 
----
+The script will:
 
-## 📋 Heartbeat API
+1.  Detect the public IP
+2.  Load all enabled domains from `domains.json`
+3.  Compare existing Cloudflare records
+4.  Update changed A records
+5.  Log & optionally notify
 
-A minimal built-in API endpoint to verify the service is alive:
+------------------------------------------------------------------------
 
-```http
+## 📡 Heartbeat API
+
+A minimal health‑check endpoint:
+
+``` http
 GET /heartbeat
 ```
 
 Example response:
 
-```json
+``` json
 {
   "status": "ok",
   "timestamp": "2025-05-29T07:55:34.156Z"
 }
 ```
 
----
+------------------------------------------------------------------------
 
 ## 📂 Logs
 
-Log output is stored in `logs/ddns.log`, for example:
+All logs are stored in:
 
-```
-[2025-05-29T07:55:00.000Z] INFO - Running scheduled DDNS check...
-[2025-05-29T07:55:01.432Z] INFO - example.com updated to IP 12.34.56.78
-```
+    ./logs/ddns.log
 
----
+Example log entries:
 
-## ✨ To-Do
+    [2025-05-29T07:55:00.000Z] INFO - foglaljon.online updated to IP 12.34.56.78
+    [2025-05-29T07:55:01.432Z] INFO - ewa.agency updated to IP 12.34.56.78
 
-- [ ] Docker support
-- [ ] Email notification option
-- [ ] Web UI for configuration
+------------------------------------------------------------------------
 
----
+## 🧭 Roadmap
+
+-   [ ] Docker support\
+-   [ ] Email notification support\
+-   [ ] Web dashboard for editing domains.json
+
+------------------------------------------------------------------------
 
 ## ☕ Credits
 
-This project was born one morning with low blood pressure and high caffeine needs.  
-Tip: always brew a coffee before starting your DDNS adventures!
+Made with caffeine, curiosity, and questionable sleep patterns.\
+Always run DDNS scripts before your morning coffee --- risky, but fun.
 
----
-
-## 📖 Reference
-
-This script was made with reference from K0p1-Git.  
-👉 [https://github.com/K0p1-Git/cloudflare-ddns-updater](https://github.com/K0p1-Git/cloudflare-ddns-updater)
-
----
+------------------------------------------------------------------------
 
 ## 📄 License
 
-MIT © 2025 – [@hunnomad](https://github.com/hunnomad)
+MIT © 2025 -- https://github.com/hunnomad
